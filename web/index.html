@@ -1,38 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
+  <meta name="description" content="بلية - كشري على أصوله">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="baleyah">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>baleyah</title>
+  <title>بلية — كشري على أصوله</title>
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#D4A017">
+  <!-- WhatsApp / social sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="بلية">
+  <meta property="og:title" content="بلية 🍽️ كشري على أصوله">
+  <meta property="og:description" content="اطلب أكل بيتي محضّر بحب — كشري، مكرونة، أرز وأكتر. توصيل سريع والدفع كاش عند الاستلام 🚚">
+  <meta property="og:image" content="https://alfadev0.github.io/baleyah/share.jpg">
+  <meta property="og:url" content="https://alfadev0.github.io/baleyah/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="apple-mobile-web-app-title" content="بلية">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(160deg, #FFF8E7 0%, #FFEFD0 100%);
+      overflow: hidden;
+    }
+    #loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      z-index: 9999;
+    }
+    .logo {
+      width: 96px;
+      height: 96px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #D4A017, #C41E3A);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 52px;
+      box-shadow: 0 12px 32px rgba(196, 30, 58, .25);
+      animation: pop .7s ease infinite alternate;
+    }
+    @keyframes pop {
+      from { transform: scale(1) rotate(-2deg); }
+      to   { transform: scale(1.07) rotate(2deg); }
+    }
+    .title { font-size: 26px; font-weight: 900; color: #2C1810; }
+    .bar {
+      width: 210px;
+      height: 8px;
+      border-radius: 99px;
+      background: rgba(44, 24, 16, .1);
+      overflow: hidden;
+    }
+    .bar::after {
+      content: '';
+      display: block;
+      height: 100%;
+      width: 45%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #D4A017, #C41E3A);
+      animation: slide 1.3s ease-in-out infinite;
+    }
+    @keyframes slide {
+      0%   { transform: translateX(220%); }
+      100% { transform: translateX(-260%); }
+    }
+    .hint { font-size: 13px; color: #8a7563; }
+    .slow { display: none; font-size: 13px; color: #C41E3A; font-weight: bold; text-align: center; padding: 0 20px; }
+    .slow.show { display: block; }
+  </style>
 </head>
 <body>
+  <div id="loader">
+    <div class="logo">🍽️</div>
+    <div class="title">بلية</div>
+    <div class="bar"></div>
+    <div class="hint">جاري التحميل...</div>
+    <div class="slow" id="slowMsg">التحميل بياخد وقت — اتأكد من اتصالك بالنترنت</div>
+  </div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var l = document.getElementById('loader');
+      if (l) l.remove();
+    });
+    setTimeout(function () {
+      var m = document.getElementById('slowMsg');
+      if (m) m.classList.add('show');
+    }, 15000);
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

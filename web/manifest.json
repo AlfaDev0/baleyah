@@ -1,12 +1,14 @@
 {
-    "name": "baleyah",
-    "short_name": "baleyah",
+    "name": "بلية — كشري على أصوله",
+    "short_name": "بلية",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFF8E7",
+    "theme_color": "#D4A017",
+    "description": "اطلب أكل بيتي محضّر بحب — توصيل سريع وكاش عند الاستلام",
     "orientation": "portrait-primary",
+    "lang": "ar",
+    "dir": "rtl",
     "prefer_related_applications": false,
     "icons": [
         {
