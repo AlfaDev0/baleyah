@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../core/constants.dart';
+import '../core/product_images.dart';
 import '../core/routes.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
@@ -47,6 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           children: [
             _header(cart, user),
+            const SizedBox(height: 14),
+            const _RestaurantStrip(),
             const SizedBox(height: 14),
             _searchBar(context),
             const SizedBox(height: 18),
@@ -137,6 +140,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       onAdd: () => _quickAdd(p),
                     ),
                   ),
+              const SizedBox(height: 18),
+              _ownerCard(),
               const SizedBox(height: 8),
             ],
           ],
@@ -153,14 +158,13 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: 48,
             height: 48,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.primaryDark],
+              border: Border.all(color: AppColors.primaryLight, width: 2),
+              image: const DecorationImage(
+                image: AssetImage(ProductImages.splashLogo),
+                fit: BoxFit.cover,
               ),
-            ),
-            child: const Center(
-              child: Text('🍛', style: TextStyle(fontSize: 26)),
             ),
           ),
           const SizedBox(width: 12),
@@ -230,11 +234,9 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(18),
+          height: 130,
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.secondary, Color(0xFFE85D3A)],
-            ),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -244,26 +246,50 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          child: const Row(
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Text('🥘', style: TextStyle(fontSize: 44)),
-              SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Image.asset(ProductImages.banner, fit: BoxFit.cover),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: .75),
+                      Colors.black.withValues(alpha: .25),
+                      Colors.transparent,
+                    ],
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(18),
+                child: Row(
                   children: [
-                    Text(
-                      'خصم 20% على كل الطلبات!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'خصم 20% على كل الطلبات!',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'اكتب كود "بلية20" في صفحة تأكيد الطلب - دوس هنا يتنسخ',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'اكتب كود "بلية20" في صفحة تأكيد الطلب - دوس هنا يتنسخ',
-                      style: TextStyle(color: Colors.white, fontSize: 12.5),
                     ),
                   ],
                 ),
@@ -276,6 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _categoryItem(Category category) {
+    final img = ProductImages.category(category.id);
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: () => context.read<UiProvider>().openMenuWithCategory(category),
@@ -289,7 +316,24 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(category.image, style: const TextStyle(fontSize: 36)),
+            ClipOval(
+              child: SizedBox(
+                width: 52,
+                height: 52,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Center(
+                      child: Text(
+                        category.image,
+                        style: const TextStyle(fontSize: 30),
+                      ),
+                    ),
+                    if (img != null) Image.asset(img, fit: BoxFit.cover),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 6),
             Text(
               category.name,
@@ -301,7 +345,88 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+
+  Widget _ownerCard() {    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primaryLight),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: .08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 86,
+              height: 112,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.primary, width: 2),
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/owner.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'صاحب المطعم',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15.5,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.verified_rounded,
+                        size: 17,
+                        color: AppColors.primary,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'مطعم بلية - كشري على أصوله',
+                    style: TextStyle(fontSize: 11.5, color: AppColors.textLight),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'أهلاً بيك في بلية! كل طبق بيتعمل بإيدينا يومياً بمكونات طازة. لو عاجباك الأكل قول لصحابك، ولو عندك أي ملاحظة أنا موجود دايماً 🤍',
+                    style: TextStyle(
+                      height: 1.55,
+                      fontSize: 12.5,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _compactCard(Product p) {
+    final img = ProductImages.product(p.id);
     return Container(
       width: 140,
       margin: const EdgeInsetsDirectional.only(end: 12),
@@ -318,31 +443,44 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
           ).pushNamed(AppRoutes.productDetail, arguments: p),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Hero(
-                tag: 'popular_${p.id}',
-                child: Text(p.image, style: const TextStyle(fontSize: 42)),
-              ),
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  p.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(17),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Center(child: Text(p.image, style: const TextStyle(fontSize: 42))),
+                      if (img != null) Image.asset(img, fit: BoxFit.cover),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                '${p.price.toInt()} ${AppInfo.currency}',
-                style: const TextStyle(
-                  color: AppColors.primaryDark,
-                  fontWeight: FontWeight.w900,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      p.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${p.price.toInt()} ${AppInfo.currency}',
+                      style: const TextStyle(
+                        color: AppColors.primaryDark,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -366,6 +504,174 @@ class _HomeScreenState extends State<HomeScreen> {
           textColor: AppColors.primaryLight,
           onPressed: () => Navigator.of(context).pushNamed(AppRoutes.cart),
         ),
+      ),
+    );
+  }
+}
+
+class _RestaurantStrip extends StatelessWidget {
+  const _RestaurantStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: .8)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.brown.withValues(alpha: .06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(
+              ProductImages.splashLogo,
+              width: 46,
+              height: 46,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'مطعم بلية - شارع الترعة، فيصل',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13.5,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    _LiveDot(),
+                  ],
+                ),
+                SizedBox(height: 5),
+                Row(
+                  children: [
+                    Icon(Icons.star_rounded, size: 16, color: AppColors.primary),
+                    SizedBox(width: 2),
+                    Text('4.8',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 12.5)),
+                    Text('  (1200+ تقييم)',
+                        style: TextStyle(
+                            fontSize: 11, color: AppColors.textLight)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const _InfoPill(icon: Icons.access_time_rounded, label: '${AppInfo.estimatedMinutes} د'),
+          const SizedBox(width: 6),
+          _InfoPill(
+              icon: Icons.delivery_dining_rounded,
+              label: '${AppInfo.deliveryFee.toInt()} ${AppInfo.currency}'),
+        ],
+      ),
+    );
+  }
+}
+
+class _LiveDot extends StatefulWidget {
+  const _LiveDot();
+
+  @override
+  State<_LiveDot> createState() => _LiveDotState();
+}
+
+class _LiveDotState extends State<_LiveDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: Tween(begin: .35, end: 1.0).animate(_c),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: AppColors.success.withValues(alpha: .12),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.success,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              'مفتوح الآن',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+                color: AppColors.success,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _InfoPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight.withValues(alpha: .3),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.primaryDark),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textDark,
+            ),
+          ),
+        ],
       ),
     );
   }

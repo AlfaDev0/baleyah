@@ -67,49 +67,28 @@ class _SplashScreenState extends State<SplashScreen>
                 animation: _controller,
                 builder: (_, __) {
                   final t = Curves.easeInOut.transform(_controller.value);
-                  return Transform.rotate(
-                    angle: (t - .5) * .35,
-                    child: Transform.scale(
-                      scale: .92 + t * .1,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            width: 170,
-                            height: 170,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [
-                                  AppColors.primary,
-                                  AppColors.primaryDark,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(
-                                    alpha: .45,
-                                  ),
-                                  blurRadius: 50,
-                                  spreadRadius: 8,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            width: 130,
-                            height: 130,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: .9),
-                            ),
-                            child: const Center(
-                              child: Text('🍛', style: TextStyle(fontSize: 72)),
-                            ),
+                  return Transform.scale(
+                    scale: .9 + t * .12,
+                    child: Container(
+                      width: 220,
+                      height: 220,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: .4),
+                            blurRadius: 60,
+                            spreadRadius: 10,
                           ),
                         ],
+                      ),
+                      padding: const EdgeInsets.all(18),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/splash_logo.png',
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   );

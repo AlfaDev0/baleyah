@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'constants.dart';
 
 class AppTheme {
+  static const String fontFamily = 'Tajawal';
+
   static ThemeData get light {
     final base = ThemeData(
       useMaterial3: true,
+      fontFamily: fontFamily,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         primary: AppColors.primary,
@@ -21,8 +24,9 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
+          fontFamily: fontFamily,
           fontSize: 19,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w800,
           color: AppColors.textDark,
         ),
       ),
@@ -34,7 +38,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          textStyle: const TextStyle(fontFamily: fontFamily, fontSize: 17, fontWeight: FontWeight.w700),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -69,8 +73,9 @@ class AppTheme {
         indicatorColor: AppColors.primaryLight,
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(
+            fontFamily: fontFamily,
             fontSize: 12,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
             color: AppColors.textDark,
           ),
         ),

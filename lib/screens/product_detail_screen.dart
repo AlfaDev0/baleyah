@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/constants.dart';
+import '../core/product_images.dart';
 import '../core/routes.dart';
 import '../models/product_model.dart';
 import '../providers/cart_provider.dart';
+import '../providers/favorites_provider.dart';
 import '../services/notification_service.dart';
 import '../widgets/animated_button.dart';
 
@@ -41,11 +43,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         .where((e) => selectedExtras.contains(e.name))
         .toList();
     await context.read<CartProvider>().add(
-      product: widget.product,
-      size: size,
-      extras: extras,
-      quantity: quantity,
-    );
+          product: widget.product,
+          size: size,
+          extras: extras,
+          quantity: quantity,
+        );
     if (!mounted) return;
     _flyToCart(flyFrom);
     NotificationService.instance.show(
@@ -128,20 +130,41 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ],
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primary, Color(0xFFE8B93B)],
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                  ),
-                ),
-                child: Center(
-                  child: Hero(
-                    tag: 'product_${p.id}',
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.primary, Color(0xFFE8B93B)],
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                      ),
+                    ),
+                    alignment: Alignment.center,
                     child: Text(p.image, style: const TextStyle(fontSize: 120)),
                   ),
-                ),
+                  if (ProductImages.product(p.id) != null)
+                    Hero(
+                      tag: 'product_${p.id}',
+                      child: Image.asset(
+                        ProductImages.product(p.id)!,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: .35),
+                          Colors.transparent,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.center,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -155,14 +178,44 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          p.name,
-                          style: const TextStyle(
-                            fontSize: 23,
-                            fontWeight: FontWeight.w900,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              p.name,
+                              style: const TextStyle(
+                                fontSize: 23,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                if (p.isPopular)
+                                  const _MiniBadge(
+                                    icon: Icons.local_fire_department_rounded,
+                                    text: 'الأكثر مبيعاً',
+                                    color: AppColors.secondary,
+                                  ),
+                                const _MiniBadge(
+                                  icon: Icons.schedule_rounded,
+                                  text:
+                                      'جاهز في ${AppInfo.estimatedMinutes - 10} د',
+                                  color: AppColors.success,
+                                ),
+                                const _MiniBadge(
+                                  icon: Icons.bolt_rounded,
+                                  text: 'كاش عند الاستلام',
+                                  color: AppColors.primaryDark,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
+                      _DetailFavButton(productId: p.id),
                       Column(
                         children: [
                           Row(
@@ -216,6 +269,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       color: AppColors.textDark,
                     ),
                   ),
+                  const SizedBox(height: 20),
+                  const _ReviewsSection(),
                   const SizedBox(height: 20),
                   const Text(
                     'اختار الحجم',
@@ -404,6 +459,189 @@ class CartCountDot extends StatelessWidget {
         '$count',
         style: const TextStyle(fontSize: 10, color: Colors.white),
       ),
+    );
+  }
+}
+
+class _MiniBadge extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color;
+  const _MiniBadge({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailFavButton extends StatelessWidget {
+  final String productId;
+  const _DetailFavButton({required this.productId});
+
+  @override
+  Widget build(BuildContext context) {
+    final isFav = context.watch<FavoritesProvider>().isFav(productId);
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => context.read<FavoritesProvider>().toggle(productId),
+        child: Container(
+          padding: const EdgeInsets.all(9),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.primaryLight),
+            color: Colors.white,
+          ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            transitionBuilder: (child, anim) =>
+                ScaleTransition(scale: anim, child: child),
+            child: Icon(
+              isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              key: ValueKey(isFav),
+              size: 22,
+              color: isFav ? AppColors.secondary : AppColors.textLight,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReviewsSection extends StatelessWidget {
+  static const _reviews = [
+    (
+      name: 'محمود ع.',
+      stars: 5,
+      text: 'أحسن كشري اكلته في حياتي بجد، البصل مقرمش والصلصة طعمة جداً'
+    ),
+    (
+      name: 'سارة م.',
+      stars: 5,
+      text: 'الطلب وصل سخن وبسرعة، الكمية كبيرة وكفاية لاتنين'
+    ),
+    (
+      name: 'أحمد ر.',
+      stars: 4,
+      text: 'ممتاز بس أتمنى يزودوا الثومية شوية في الوسط'
+    ),
+  ];
+
+  const _ReviewsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              'آراء العملاء',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+            ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: .35),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.star_rounded,
+                      size: 15, color: AppColors.primaryDark),
+                  SizedBox(width: 2),
+                  Text('4.8/5',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 11.5)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ..._reviews.map((r) => Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: AppColors.primaryLight.withValues(alpha: .6)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 13,
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: .18),
+                        child: Text(r.name[0],
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w800)),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(r.name,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 13)),
+                      const Spacer(),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(
+                          5,
+                          (i) => Icon(
+                            i < r.stars
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(r.text,
+                      style: const TextStyle(
+                          fontSize: 12.5,
+                          height: 1.5,
+                          color: AppColors.textDark)),
+                ],
+              ),
+            )),
+      ],
     );
   }
 }

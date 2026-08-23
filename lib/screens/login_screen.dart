@@ -81,8 +81,15 @@ class _LoginScreenState extends State<LoginScreen> {
               tag: 'login_logo',
               child: CircleAvatar(
                 radius: 52,
-                backgroundColor: AppColors.primary.withValues(alpha: .15),
-                child: const Text('🍛', style: TextStyle(fontSize: 56)),
+                backgroundColor: Colors.white,
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/splash_logo.png',
+                    fit: BoxFit.cover,
+                    width: 104,
+                    height: 104,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 28),

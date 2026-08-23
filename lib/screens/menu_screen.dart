@@ -5,6 +5,7 @@ import '../core/constants.dart';
 import '../core/routes.dart';
 import '../models/product_model.dart';
 import '../providers/cart_provider.dart';
+import '../providers/favorites_provider.dart';
 import '../providers/menu_provider.dart';
 import '../providers/ui_provider.dart';
 import '../widgets/product_card.dart';
@@ -130,6 +131,7 @@ class _MenuScreenState extends State<MenuScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 _chip(context, id: 'all', emoji: '🍽️', name: 'الكل'),
+                _favChip(context),
                 ...menu.categories.map(
                   (c) => _chip(context, id: c.id, emoji: c.image, name: c.name),
                 ),
@@ -146,8 +148,13 @@ class _MenuScreenState extends State<MenuScreen> {
                       children: const [ShimmerLoading(itemCount: 6)],
                     )
                   : Builder(
-                      builder: (context) {
-                        final products = menu.filteredProducts;
+                       builder: (context) {
+                         final favs = context.watch<FavoritesProvider>();
+                         final products = menu.selectedCategoryId == 'favs'
+                             ? menu.filteredProducts
+                                   .where((p) => favs.isFav(p.id))
+                                   .toList()
+                             : menu.filteredProducts;
                         if (products.isEmpty) {
                           return ListView(
                             children: const [
@@ -187,6 +194,37 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _favChip(BuildContext context) {
+    final favs = context.watch<FavoritesProvider>();
+    final selected = context.watch<MenuProvider>().selectedCategoryId == 'favs';
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: 8),
+      child: ChoiceChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              favs.count > 0 || selected
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              size: 15,
+              color: selected ? Colors.white : AppColors.secondary,
+            ),
+            const SizedBox(width: 5),
+            Text('المفضلة${favs.count > 0 ? ' (${favs.count})' : ''}'),
+          ],
+        ),
+        selected: selected,
+        onSelected: (_) => context.read<MenuProvider>().selectCategory('favs'),
+        labelStyle: TextStyle(
+          fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+          color: selected ? Colors.white : AppColors.textLight,
+        ),
+        selectedColor: AppColors.secondary,
       ),
     );
   }

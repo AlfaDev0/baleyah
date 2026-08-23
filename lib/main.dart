@@ -6,6 +6,7 @@ import 'core/constants.dart';
 import 'core/routes.dart';
 import 'core/theme.dart';
 import 'providers/cart_provider.dart';
+import 'providers/favorites_provider.dart';
 import 'providers/menu_provider.dart';
 import 'providers/order_provider.dart';
 import 'providers/ui_provider.dart';
@@ -28,6 +29,7 @@ class BaleyahApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MenuProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()..load()),
         ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => FavoritesProvider()..load()),
         ChangeNotifierProvider(create: (_) => UiProvider()),
       ],
       child: MaterialApp(
