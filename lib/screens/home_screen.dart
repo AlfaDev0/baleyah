@@ -386,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Flexible(
                         child: Text(
-                          'صاحب المطعم',
+                          'أحمد ايمن فكرى',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 15.5,
