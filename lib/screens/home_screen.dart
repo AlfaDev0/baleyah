@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -6,11 +8,14 @@ import '../core/constants.dart';
 import '../core/product_images.dart';
 import '../core/routes.dart';
 import '../models/category_model.dart';
+import '../models/order_model.dart';
 import '../models/product_model.dart';
 import '../providers/cart_provider.dart';
 import '../providers/menu_provider.dart';
+import '../providers/order_provider.dart';
 import '../providers/ui_provider.dart';
 import '../providers/user_provider.dart';
+import '../services/share_service.dart';
 import '../widgets/cart_badge.dart';
 import '../widgets/product_card.dart';
 
@@ -22,12 +27,37 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Timer? _ticker;
+  Duration _toMidnight = const Duration();
+
   @override
   void initState() {
     super.initState();
+    _tick();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MenuProvider>().load();
     });
+  }
+
+  void _tick() {
+    final now = DateTime.now();
+    final midnight = DateTime(now.year, now.month, now.day + 1);
+    if (mounted) setState(() => _toMidnight = midnight.difference(now));
+  }
+
+  String get _countdownText {
+    final h = _toMidnight.inHours;
+    final m = _toMidnight.inMinutes.remainder(60);
+    final s = _toMidnight.inSeconds.remainder(60);
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${two(h)}:${two(m)}:${two(s)}';
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
   }
 
   @override
@@ -54,6 +84,8 @@ class _HomeScreenState extends State<HomeScreen> {
             _searchBar(context),
             const SizedBox(height: 18),
             _offerBanner(),
+            const SizedBox(height: 14),
+            _loyaltyCard(),
             const SizedBox(height: 20),
             if (menu.isLoading)
               const SizedBox.shrink()
@@ -294,6 +326,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+              Positioned(
+                bottom: 10,
+                left: 14,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: .55),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.timer_rounded,
+                          size: 13, color: AppColors.primary),
+                      const SizedBox(width: 5),
+                      Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Text(
+                          'العرض بيقف بعد $_countdownText',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -345,6 +409,148 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+
+  Widget _loyaltyCard() {
+    final orders = context.watch<OrderProvider>().orders;
+    final delivered =
+        orders.where((o) => o.status == OrderStatus.delivered).length;
+    final stamps = delivered % 5;
+    final remaining = 5 - stamps;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFD4A017), Color(0xFFB8860B)],
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: .35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .18),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.card_giftcard_rounded,
+                  color: Colors.white, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'كارت الولاء',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14.5,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ...List.generate(5, (i) {
+                        final filled = i < stamps;
+                        return Container(
+                          width: 15,
+                          height: 15,
+                          margin: const EdgeInsets.only(left: 3),
+                          decoration: BoxDecoration(
+                            color: filled
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: .25),
+                            shape: BoxShape.circle,
+                            border:
+                                Border.all(color: Colors.white, width: 1.2),
+                          ),
+                          child: filled
+                              ? const Icon(Icons.check_rounded,
+                                  size: 11, color: AppColors.primary)
+                              : null,
+                        );
+                      }),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    delivered == 0
+                        ? 'اطلب أول طلب وابدأ جمع الخواتم — كل 5 طلبات هدية 🎁'
+                        : remaining == 5 && delivered > 0
+                            ? 'مبروك! خلصت كارت — الكشري الجاي علينا 🎉'
+                            : 'بعد $remaining ${remaining == 1 ? 'طلب' : 'طلبات'} ويجيلك كشري مجاني 🎁',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () async {
+                final opened = await ShareService.shareApp();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor:
+                        opened ? AppColors.success : AppColors.primaryDark,
+                    content: Text(
+                      opened
+                          ? 'اتفتح واتساب — ابعت الرسالة لصحابك 🚀'
+                          : 'الرسالة اتنسخت — الصقها في واتساب 📋',
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 9,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.share_rounded,
+                        size: 16, color: AppColors.primaryDark),
+                    SizedBox(width: 6),
+                    Text(
+                      'شارك',
+                      style: TextStyle(
+                        color: AppColors.primaryDark,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _ownerCard() {    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

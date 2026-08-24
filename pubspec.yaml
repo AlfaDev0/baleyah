@@ -1,7 +1,7 @@
 name: baleyah
 description: "بلية - تطبيق طلبات كشري مع الدفع عند الاستلام"
 publish_to: "none"
-version: 1.1.0+2
+version: 1.2.0+3
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -15,6 +15,7 @@ dependencies:
   provider: ^6.1.1
   shared_preferences: ^2.2.2
   shimmer: ^3.0.0
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
